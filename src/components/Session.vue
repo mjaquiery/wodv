@@ -97,6 +97,7 @@ export default {
       console.log(`[${this.session.id}] ${this.session.Date} <- ${this.newPlayerName}`);
 
       try {
+        this.$store.commit('setItemsLoading', true);
         const response = await fetch('/.netlify/functions/sheets', {
           method: 'POST',
           headers: {task: 'addPlayer'},
@@ -119,6 +120,7 @@ export default {
         });
         console.error(e);
       }
+      this.$store.commit('setItemsLoading', false);
       this.newPlayerName = "";
       this.$store.dispatch('refresh');
     }
