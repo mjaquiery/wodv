@@ -17,7 +17,6 @@ const { GoogleSpreadsheet } = require('google-spreadsheet');
  */
 async function main(event, context, callback) {
     try {
-        let sheetData = {};
         console.log(`Fetching Google Sheets content`)
 
         const doc = new GoogleSpreadsheet(GOOGLE_SPREADSHEET_ID_FROM_URL);
@@ -29,13 +28,30 @@ async function main(event, context, callback) {
 
         await doc.loadInfo(); // loads document properties and worksheets. required.
 
-        const sheet = doc.sheetsByIndex[0]; // you may want to customize this if you have more than 1 sheet
+        const sheets = [
+            doc.sheetsByIndex[0],
+            doc.sheetsByIndex[1],
+            doc.sheetsByIndex[2]
+        ];
+        console.log({sheets})
+        const rows = await Promise.allSettled(sheets.map(s => s.getRows()));
+        //console.log(rows[1].value)
 
-        const rows = await sheet.getRows(); // can pass in { limit, offset }
-
-        sheetData = rows.map(r => serializeRow(sheet, r));
-
-        callback(null, {statusCode: 200, body: JSON.stringify(sheetData)});
+        switch(event.headers.task) {
+            case "addPlayer":
+                await addPlayer(event, rows);
+                callback(null, {statusCode: 200, body: JSON.stringify({
+                        success: true
+                    })});
+                break;
+            default:
+                callback(null, {
+                    statusCode: 200,
+                    body: JSON.stringify(
+                        rows.map(r => r.value.map(x => serializeRow(x)))
+                    )
+                });
+        }
     } catch(e) {
         console.error(e);
         callback(e);
@@ -45,10 +61,37 @@ async function main(event, context, callback) {
 /*
  * utils
  */
-function serializeRow(sheet, row) {
+function serializeRow(row) {
     let temp = {};
-    sheet.headerValues.map((header) => {
-        temp[header] = row[header];
-    });
+    try {
+        row._sheet.headerValues.map((header) => {
+            temp[header] = row[header];
+        });
+    } catch(e) {
+        console.log({error: e, row});
+    }
     return temp;
+}
+
+async function addPlayer(event, rows) {
+    const players = rows[0].value;
+    const sessions = rows[1].value;
+    const body = JSON.parse(event.body);
+    const player = body.playerName;
+    const session = body.sessionId;
+    const playerRow = players.filter(p => p.Player === player);
+    if(!playerRow.length)
+        throw new Error(`Could not find player with name "${player}"`);
+    const targetSession = sessions.filter(s => s.id === session);
+    if(!targetSession.length)
+        throw new Error(`Could not find session with id "${session}"`);
+
+    const sessionMax = parseInt(targetSession[0]['Max players']);
+    const sessionPlayers = players.filter(p => p.Session === session).length;
+    if(sessionPlayers >= sessionMax)
+        throw new Error(`Session already has ${sessionPlayers}/${sessionMax} players`);
+
+    playerRow[0].Session = session;
+    console.log(playerRow[0])
+    await playerRow[0].save();
 }
