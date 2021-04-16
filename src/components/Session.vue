@@ -1,5 +1,5 @@
 <template>
-  <section v-if="date >= new Date()">
+  <section v-if="date >= yesterday">
     <b-collapse
             class="card"
             :open="false"
@@ -68,6 +68,12 @@ export default {
     }
   },
   computed: {
+    yesterday() {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      yesterday.setHours(0, 0, 0, 0);
+      return yesterday;
+    },
     date() {
       const match = /^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/.exec(this.session.Date);
       if(!match)
