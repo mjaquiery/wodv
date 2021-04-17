@@ -1,13 +1,10 @@
-[![DOI](https://zenodo.org/badge/349752104.svg)](https://zenodo.org/badge/latestdoi/349752104) [![Netlify Status](https://api.netlify.com/api/v1/badges/608d28c1-597c-4437-9a68-d94077244ca4/deploy-status)](https://app.netlify.com/sites/nervous-payne-efa831/deploys)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/33b39573-dfd2-4153-bccf-267a45fab52c/deploy-status)](https://app.netlify.com/sites/wodv/deploys)
 
-# UKRN Open Research Resources Browser
+# WODV
 
 ## About
 
-The [UK Reproducibility Network (UKRN)](https://ukrn.org/) is an organisation that promotes open research practices in the United Kingdom. 
-As part of its operations, it maintains a list of open research resources.
-These resources are listed in a Google Sheets document.
-This Browser makes exploring, viewing, and filtering the resources easier.
+West Oxford Dads' Volleyball scheduler.
 
 ## Local development
 
@@ -56,4 +53,4 @@ If you run into difficulty with them, more information can be found at:
 * [Netlify](https://docs.netlify.com/)
 
 ## License
-This project is licensed under the [MIT license](https://github.com/UKRN-Open-Research/ukrn-open-research-resources/blob/master/LICENSE.txt).
+This project is licensed under the [MIT license](https://github.com/mjaquiery/wodv/blob/master/LICENSE.txt).
