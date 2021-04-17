@@ -5,7 +5,7 @@
             :open="false"
             animation="slide"
             aria-id="contentIdForA11y1"
-            :class="spaceLeft? 'has-background-primary-light' : 'has-background-warning-light'"
+            :class="!spaceLeft? 'has-background-primary-light' : 'has-background-warning-light'"
     >
       <template #trigger="props">
         <header class="card-header">
@@ -15,7 +15,7 @@
             </h1>
             <div class="icons">
               <div class="info">
-                <b-icon :icon="spaceLeft? 'account-group' : 'account-group-outline'"/>
+                <b-icon :icon="!spaceLeft? 'account-group' : 'account-group-outline'"/>
                 {{ players.length }}/{{ session['Max players'] }}
               </div>
               <div class="info">
@@ -33,7 +33,13 @@
       <div v-if="players.length"
            class="players has-background-white">
         <ul>
-          <li v-for="player in players" :key="player">
+          <li v-for="player in players" :key="player" class="player">
+            <b-button @click="evt => removePlayer(player)"
+                      icon-left="close"
+                      rounded
+                      size="is-small"
+                      class="remove"
+            />
             {{ player }}
           </li>
         </ul>
@@ -95,8 +101,8 @@ export default {
     }
   },
   methods: {
-    async addPlayer() {
-      if(!this.newPlayerName || !this.nonPlayers.includes(this.newPlayerName)) {
+    async addPlayer(sessionId = null, playerName = null) {
+      if(playerName === null && (!this.newPlayerName || !this.nonPlayers.includes(this.newPlayerName))) {
         this.newPlayerName = "";
         return false;
       }
@@ -104,20 +110,20 @@ export default {
 
       try {
         this.$store.commit('setItemsLoading', true);
+        const body = JSON.stringify({
+          sessionId: sessionId === ""? sessionId : this.session.id,
+          playerName: sessionId === ""? playerName : this.newPlayerName
+        });
+        console.log(body)
         const response = await fetch('/.netlify/functions/sheets', {
-          method: 'POST',
-          headers: {task: 'addPlayer'},
-          body: JSON.stringify({
-            sessionId: this.session.id,
-            playerName: this.newPlayerName
-          })
+          method: 'POST', headers: {task: 'addPlayer'}, body
         });
         const json = await response.json();
         if(!json || json.error)
           throw new Error(json? json.error : 'No legible server response');
         this.$buefy.toast.open({
           type: 'is-success',
-          message: 'Joined session.'
+          message: sessionId === ''? 'Left session.' : 'Joined session.'
         });
       } catch(e) {
         this.$buefy.toast.open({
@@ -129,6 +135,9 @@ export default {
       this.$store.commit('setItemsLoading', false);
       this.newPlayerName = "";
       this.$store.dispatch('refresh');
+    },
+    removePlayer(player) {
+      this.addPlayer('', player);
     }
   }
 }
@@ -147,9 +156,26 @@ export default {
     align-items: center;
     justify-content: space-evenly;
   }
+  .card-header {
+    display: flex;
+    width: 100%;
+    align-content: center;
+    flex-direction: row;
+    justify-content: space-between;
+  }
 
   .players {
     padding: .5em;
+    .player {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 2em;
+      user-select: none;
+      .remove {
+        border: none;
+      }
+    }
   }
 
   footer .field {

@@ -83,13 +83,14 @@ async function addPlayer(event, rows) {
     if(!playerRow.length)
         throw new Error(`Could not find player with name "${player}"`);
     const targetSession = sessions.filter(s => s.id === session);
-    if(!targetSession.length)
-        throw new Error(`Could not find session with id "${session}"`);
-
-    const sessionMax = parseInt(targetSession[0]['Max players']);
-    const sessionPlayers = players.filter(p => p.Session === session).length;
-    if(sessionPlayers >= sessionMax)
-        throw new Error(`Session already has ${sessionPlayers}/${sessionMax} players`);
+    if(session !== "") {
+        if(!targetSession.length)
+            throw new Error(`Could not find session with id "${session}"`);
+        const sessionMax = parseInt(targetSession[0]['Max players']);
+        const sessionPlayers = players.filter(p => p.Session === session).length;
+        if(sessionPlayers >= sessionMax)
+            throw new Error(`Session already has ${sessionPlayers}/${sessionMax} players`);
+    }
 
     playerRow[0].Session = session;
     console.log(playerRow[0])
