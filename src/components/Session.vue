@@ -1,5 +1,5 @@
 <template>
-  <section v-if="date >= yesterday">
+  <section v-if="date > yesterday">
     <b-collapse
             class="card"
             :open="false"
