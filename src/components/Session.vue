@@ -22,6 +22,10 @@
                 <b-icon icon="map-marker"/>
                 {{ session.Location }}
               </div>
+              <div class="info">
+                <b-icon icon="clock-outline"/>
+                {{ niceTime }}
+              </div>
             </div>
           </div>
           <a class="card-header-icon">
@@ -81,10 +85,10 @@ export default {
       return yesterday;
     },
     date() {
-      const match = /^([0-9]{2})\/([0-9]{2})\/([0-9]{4})$/.exec(this.session.Date);
+      const match = /^([0-9]{2})\/([0-9]{2})\/([0-9]{4}) ([0-9]{2}):([0-9]{2})/.exec(this.session.Date);
       if(!match)
         return new Date(0);
-      return new Date(parseInt(match[3]), parseInt(match[2]) - 1, parseInt(match[1]));
+      return new Date(parseInt(match[3]), parseInt(match[2]) - 1, parseInt(match[1]), parseInt(match[4]), parseInt(match[5]));
     },
     players() {
       return this.$store.state.players.filter(p => p.Session === this.session.id)
@@ -98,6 +102,10 @@ export default {
     niceDate() {
       const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
       return this.date.toLocaleDateString("en-UK", options);
+    },
+    niceTime() {
+      const options = {hour: '2-digit', minute:'2-digit'};
+      return this.date.toLocaleTimeString("en-UK", options);
     }
   },
   methods: {
@@ -150,11 +158,13 @@ export default {
     width: 100%;
     margin-bottom: 1.5em;
   }
+  .text {width: 100%;}
   .icons {
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: space-evenly;
+    width: 100%;
   }
   .card-header {
     display: flex;
