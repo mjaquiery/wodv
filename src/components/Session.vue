@@ -99,6 +99,8 @@ export default {
               .map(p => p.Player);
     },
     nonPlayers_filtered() {
+      if(!this.newPlayerName.length)
+        return this.nonPlayers;
       const np = this.newPlayerName.toLowerCase();
       const out = this.nonPlayers.filter(p => {
         let n = p.toLowerCase();
