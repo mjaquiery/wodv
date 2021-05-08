@@ -51,7 +51,7 @@
       <footer v-if="spaceLeft" class="card-footer">
         <b-field>
           <b-autocomplete icon-right="plus"
-                          :data="nonPlayers"
+                          :data="nonPlayers_filtered"
                           v-model="newPlayerName"
                           placeholder="Type your name"
                           expanded
@@ -97,6 +97,37 @@ export default {
     nonPlayers() {
       return this.$store.state.players.filter(p => p.Session !== this.session.id)
               .map(p => p.Player);
+    },
+    nonPlayers_filtered() {
+      const np = this.newPlayerName.toLowerCase();
+      const out = this.nonPlayers.filter(p => {
+        let n = p.toLowerCase();
+        console.log({n, np})
+        for(let i = 0; i < np.length; i++) {
+          const n_old = n;
+          n = n.replace(np[i], '');
+          if(n.length === n_old.length)
+            return false;
+        }
+        return true;
+      });
+      out.sort((a, b) => {
+        a = a.toLowerCase();
+        b = b.toLowerCase();
+        const ai = a.indexOf(np);
+        const bi = b.indexOf(np);
+        // Sort alphabetically if indexes match
+        if(ai === bi)
+          return a < b? -1 : a === b? 0 : 1;
+        // Sort by first occurrence of (whole) target string
+        if(ai !== -1 && bi !== -1)
+          return ai < bi? -1 : 1;
+        if(ai)
+          return -1;
+        if(bi)
+          return 1;
+      });
+      return out;
     },
     spaceLeft() {return this.players.length < parseInt(this.session['Max players'])},
     niceDate() {
