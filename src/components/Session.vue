@@ -1,5 +1,5 @@
 <template>
-  <section v-if="date > yesterday">
+  <section v-if="dateEnd > Date.now()">
     <b-collapse
             class="card"
             :open="false"
@@ -25,6 +25,10 @@
               <div class="info">
                 <b-icon icon="clock-outline"/>
                 {{ niceTime }}
+              </div>
+              <div class="info">
+                <b-icon icon="cash"/>
+                {{ cost }}
               </div>
             </div>
           </div>
@@ -74,21 +78,26 @@ export default {
   },
   data: function() {
     return {
-      newPlayerName: ""
+      newPlayerName: "",
+      duration: 180 // Minutes a session lasts
     }
   },
   computed: {
-    yesterday() {
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      yesterday.setHours(0, 0, 0, 0);
-      return yesterday;
-    },
     date() {
-      const match = /^([0-9]{2})\/([0-9]{2})\/([0-9]{4}) ([0-9]{2}):([0-9]{2})/.exec(this.session.Date);
+      const match = /^([0-9]{2})\/([0-9]{2})\/([0-9]{4})/.exec(this.session.Date);
       if(!match)
         return new Date(0);
-      return new Date(parseInt(match[3]), parseInt(match[2]) - 1, parseInt(match[1]), parseInt(match[4]), parseInt(match[5]));
+      let time = /^([0-9]{2}):([0-9]{2})/.exec(this.session.Time);
+      if(!time)
+        time = [0,0,0];
+      return new Date(parseInt(match[3]), parseInt(match[2]) - 1, parseInt(match[1]), parseInt(time[1]), parseInt(time[2]));
+    },
+    dateEnd() {
+      if (!this.date)
+        return new Date(0);
+      const d = new Date(this.date);
+      d.setMinutes(d.getMinutes() + this.duration);
+      return d;
     },
     players() {
       return this.$store.state.players.filter(p => p.Session === this.session.id)
@@ -139,6 +148,9 @@ export default {
     niceTime() {
       const options = {hour: '2-digit', minute:'2-digit'};
       return this.date.toLocaleTimeString("en-UK", options);
+    },
+    cost() {
+      return this.session.Cost;
     }
   },
   methods: {
@@ -187,11 +199,12 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="scss">
   section {
-    max-width: 300px;
+    max-width: 500px;
     width: 100%;
     margin-bottom: 1.5em;
   }
   .text {width: 100%;}
+  .info {text-align: center;}
   .icons {
     display: flex;
     flex-direction: row;
